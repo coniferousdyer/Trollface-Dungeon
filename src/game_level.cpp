@@ -40,6 +40,7 @@ bool GameLevel::IsCompleted()
     for (GameObject &tile : this->Bricks)
         if (!tile.IsSolid && !tile.Destroyed)
             return false;
+
     return true;
 }
 
@@ -49,6 +50,9 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned i
     unsigned int height = tileData.size();
     unsigned int width = tileData[0].size(); // note we can index vector at [0] since this function is only called if height > 0
     float unit_width = levelWidth / static_cast<float>(width), unit_height = levelHeight / height;
+    this->TileWidth = unit_width;
+    this->TileHeight = unit_height;
+    
     // initialize level tiles based on tileData
     for (unsigned int y = 0; y < height; ++y)
     {

@@ -23,6 +23,8 @@
 class GameLevel
 {
 public:
+    // Tile dimensions
+    int TileWidth, TileHeight;
     // level state
     std::vector<GameObject> Bricks;
     // constructor

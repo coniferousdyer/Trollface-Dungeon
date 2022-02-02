@@ -9,10 +9,11 @@ enum GameState
 {
     GAME_ACTIVE,
     GAME_MENU,
-    GAME_WIN
+    GAME_WIN,
+    GAME_OVER
 };
 // Initial size of the player character
-const glm::vec2 PLAYER_SIZE(50.0f, 50.0f);
+const glm::vec2 PLAYER_SIZE(20.0f, 20.0f);
 // Initial velocity of the player character
 const float PLAYER_VELOCITY(200.0f);
 
@@ -34,7 +35,8 @@ public:
     void Render();
 
     void DoCollisions();
-    bool checkWallCollisions();
+    void MoveEnemy(GameObject *enemy, int i, float dt);
+    bool checkWallCollisions(GameObject *obj);
 };
 
 #endif

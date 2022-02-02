@@ -19,6 +19,7 @@ public:
     float Rotation;
     bool IsSolid;
     bool IsCoin;
+    bool IsEnemy;
     bool Destroyed;
     // render state
     Texture2D Sprite;
