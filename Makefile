@@ -411,6 +411,33 @@ src/stb_image.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/stb_image.cpp.s
 .PHONY : src/stb_image.cpp.s
 
+src/text_renderer.o: src/text_renderer.cpp.o
+
+.PHONY : src/text_renderer.o
+
+# target to build an object file
+src/text_renderer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/text_renderer.cpp.o
+.PHONY : src/text_renderer.cpp.o
+
+src/text_renderer.i: src/text_renderer.cpp.i
+
+.PHONY : src/text_renderer.i
+
+# target to preprocess a source file
+src/text_renderer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/text_renderer.cpp.i
+.PHONY : src/text_renderer.cpp.i
+
+src/text_renderer.s: src/text_renderer.cpp.s
+
+.PHONY : src/text_renderer.s
+
+# target to generate assembly for a file
+src/text_renderer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/text_renderer.cpp.s
+.PHONY : src/text_renderer.cpp.s
+
 src/texture.o: src/texture.cpp.o
 
 .PHONY : src/texture.o
@@ -476,6 +503,9 @@ help:
 	@echo "... src/stb_image.o"
 	@echo "... src/stb_image.i"
 	@echo "... src/stb_image.s"
+	@echo "... src/text_renderer.o"
+	@echo "... src/text_renderer.i"
+	@echo "... src/text_renderer.s"
 	@echo "... src/texture.o"
 	@echo "... src/texture.i"
 	@echo "... src/texture.s"

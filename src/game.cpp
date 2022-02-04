@@ -4,14 +4,19 @@
 #include "sprite_renderer.h"
 #include "game_object.h"
 #include "game_level.h"
+#include "text_renderer.h"
 
-// Global game variables
-const int MAX_ENEMIES = 50;
-int ENEMY_LIMIT = 10;
+// Global game constants
+const int MAX_ENEMIES = 11;
 int WALL_LIMIT = 10;
 int COIN_LIMIT = 10;
+int ENEMY_LIMIT = 1;
 int RANDOM_FACTOR = 100;
 int MOVE_FACTOR = 20;
+
+// Global game variables
+int NUM_COINS = 0;
+int NUM_WALLS = 0;
 int ENEMY_DIRECTION[MAX_ENEMIES] = {0};
 
 // Game matrix dimensions
@@ -20,6 +25,7 @@ const int LEVEL_HEIGHT = 30;
 
 // Game objects
 SpriteRenderer *Renderer;
+TextRenderer *Text;
 GameObject *Player, *Enemies[MAX_ENEMIES];
 
 // Game object attributes
@@ -52,22 +58,23 @@ void GenerateMatrix(int matrix[LEVEL_HEIGHT][LEVEL_WIDTH])
         {
             if (i == 0 || i == LEVEL_HEIGHT - 1 || j == 0 || j == LEVEL_WIDTH - 1)
             {
-                if (i == LEVEL_HEIGHT - 1 && (j == LEVEL_WIDTH / 2 - 1 || j == LEVEL_WIDTH / 2 || j == LEVEL_WIDTH / 2 + 1))
+                if ((i == 0 || i == LEVEL_HEIGHT - 1) && (j == LEVEL_WIDTH / 2 - 1 || j == LEVEL_WIDTH / 2 || j == LEVEL_WIDTH / 2 + 1))
                     matrix[i][j] = 0;
                 else
                     matrix[i][j] = 1;
             }
             else
             {
-                if (wallLimit > 0)
+                matrix[i][j] = rand() % randomFactor;
+                if (matrix[i][j] == 2 && wallLimit > 0)
                 {
-                    matrix[i][j] = rand() % randomFactor;
-                    if (matrix[i][j] == 2)
-                        wallLimit--;
-                    else if (matrix[i][j] == 3 && coinLimit > 0)
-                        coinLimit--;
-                    else
-                        matrix[i][j] = 0;
+                    wallLimit--;
+                    NUM_WALLS++;
+                }
+                else if (matrix[i][j] == 3 && coinLimit > 0)
+                {
+                    coinLimit--;
+                    NUM_COINS++;
                 }
                 else
                     matrix[i][j] = 0;
@@ -92,6 +99,71 @@ void FindEnemyPosition(int matrix[LEVEL_HEIGHT][LEVEL_WIDTH], int &x, int &y)
     y = randomY;
 }
 
+void Game::ResetGame()
+{
+    if (this->Level != 2)
+    {
+        // Reset game variables
+        this->score = 0;
+        NUM_COINS = 0;
+        NUM_WALLS = 0;
+        MOVE_FACTOR = 20;
+        for (int i = 0; i < MAX_ENEMIES; i++)
+            ENEMY_DIRECTION[i] = 0;
+
+        for (int i = 0; i < ENEMY_LIMIT - 5; i++)
+            delete Enemies[i];
+
+        // Increase difficulty
+        ENEMY_LIMIT += 5;
+        WALL_LIMIT += 5;
+        COIN_LIMIT += 5;
+
+        // Reset game matrix
+        int matrix[LEVEL_HEIGHT][LEVEL_WIDTH];
+        GenerateMatrix(matrix);
+
+        std::string file = "";
+        if (this->Level == 0)
+            file = "levels/two.lvl";
+        else if (this->Level == 1)
+            file = "levels/three.lvl";
+
+        // write matrix to level
+        std::ofstream outfile(file);
+        for (int i = 0; i < LEVEL_HEIGHT; i++)
+        {
+            for (int j = 0; j < LEVEL_WIDTH; j++)
+                outfile << matrix[i][j] << " ";
+
+            outfile << std::endl;
+        }
+
+        GameLevel lvl;
+        lvl.Load(file.c_str(), this->Width, this->Height);
+        this->Levels.push_back(lvl);
+
+        // Reset player position
+        Player->Position = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, 0.0f);
+
+        // Generating new enemies
+        glm::vec2 enemySize = glm::vec2(this->Levels[this->Level + 1].TileWidth, this->Levels[this->Level + 1].TileHeight);
+        for (int i = 0; i < ENEMY_LIMIT; i++)
+        {
+            // Find random enemy spawn position
+            int x, y;
+            FindEnemyPosition(matrix, x, y);
+            glm::vec2 enemyPos = glm::vec2(x * enemySize.x, y * enemySize.y);
+
+            // Create enemies
+            Enemies[i] = new GameObject(enemyPos, enemySize, ResourceManager::GetTexture("enemy"));
+            Enemies[i]->IsEnemy = true;
+        }
+    }
+    else
+        this->State = GAME_WIN;
+}
+
 void Game::MoveEnemy(GameObject *enemy, int index, float dt)
 {
     if (this->State == GAME_ACTIVE)
@@ -100,6 +172,7 @@ void Game::MoveEnemy(GameObject *enemy, int index, float dt)
 
         if (MOVE_FACTOR == 0)
         {
+            // Choosing random direction for enemy movement
             ENEMY_DIRECTION[index] = rand() % 4;
             MOVE_FACTOR = 20;
         }
@@ -159,13 +232,17 @@ void Game::Init()
     srand(time(NULL));
 
     this->score = 0;
-    int enemyLimit = ENEMY_LIMIT;
+    this->Level = 0;
 
     ResourceManager::LoadShader("shaders/sprite.vs", "shaders/sprite.frag", nullptr, "sprite");
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width),
                                       static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
     ResourceManager::GetShader("sprite").Use().SetInteger("image", 0);
     ResourceManager::GetShader("sprite").SetMatrix4("projection", projection);
+
+    Text = new TextRenderer(this->Width, this->Height);
+    Text->Load("fonts/OCRAEXT.TTF", 24);
+
     // set render-specific controls
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     // load textures
@@ -176,6 +253,7 @@ void Game::Init()
     ResourceManager::LoadTexture("textures/coin.png", false, "coin");
     ResourceManager::LoadTexture("textures/trollface.png", true, "enemy");
     ResourceManager::LoadTexture("textures/game_over.jpg", false, "game_over");
+    ResourceManager::LoadTexture("textures/game_won.jpeg", false, "game_won");
 
     // create game matrix
     int matrix[LEVEL_HEIGHT][LEVEL_WIDTH];
@@ -197,7 +275,7 @@ void Game::Init()
     this->Levels.push_back(one);
 
     // Create player
-    glm::vec2 playerPos = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
+    glm::vec2 playerPos = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, 0.0f);
     Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::GetTexture("amogus"));
     Player->IsEnemy = false;
 
@@ -256,11 +334,22 @@ void Game::ProcessInput(float dt)
         }
         if (this->Keys[GLFW_KEY_S])
         {
-            if (Player->Position.y <= this->Height - Player->Size.y && this->checkWallCollisions(Player))
-                Player->Position.y += velocity;
+            if (this->checkWallCollisions(Player))
+            {
+                if (this->score >= NUM_COINS)
+                    Player->Position.y += velocity;
+                else if (Player->Position.y <= this->Height - Player->Size.y)
+                    Player->Position.y += velocity;
+            }
 
             if (!this->checkWallCollisions(Player))
                 Player->Position.y -= velocity;
+        }
+
+        if (this->score >= NUM_COINS && Player->Position.y >= this->Height - Player->Size.y)
+        {
+            this->ResetGame();
+            this->Level++;
         }
     }
 }
@@ -278,11 +367,16 @@ void Game::Render()
         // draw enemies
         for (int i = 0; i < ENEMY_LIMIT; i++)
             Enemies[i]->Draw(*Renderer);
+
+        int coinsLeft = NUM_COINS - this->score;
+        std::stringstream ss;
+        ss << coinsLeft;
+        Text->RenderText("Coins left:" + ss.str(), 5.0f, 5.0f, 1.0f);
     }
     else if (this->State == GAME_OVER)
-    {
         Renderer->DrawSprite(ResourceManager::GetTexture("game_over"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
-    }
+    else if (this->State == GAME_WIN)
+        Renderer->DrawSprite(ResourceManager::GetTexture("game_won"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
 }
 
 void Game::DoCollisions()

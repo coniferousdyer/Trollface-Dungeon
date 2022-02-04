@@ -37,6 +37,7 @@ public:
     void DoCollisions();
     void MoveEnemy(GameObject *enemy, int i, float dt);
     bool checkWallCollisions(GameObject *obj);
+    void ResetGame();
 };
 
 #endif
