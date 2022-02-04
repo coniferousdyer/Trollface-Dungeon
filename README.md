@@ -14,12 +14,12 @@ You have an option to toggle the lights on and off. The lights are on by default
 
 ## Controls
 
-<kbd>W</kbd> - Move up
-<kbd>A</kbd> - Move left
-<kbd>S</kbd> - Move down
-<kbd>D</kbd> - Move right
-<kbd>Esc</kbd> - Quit
-<kbd>SPACE</kbd> - Toggle lights on and off
+<kbd>W</kbd> - Move up<br>
+<kbd>A</kbd> - Move left<br>
+<kbd>S</kbd> - Move down<br>
+<kbd>D</kbd> - Move right<br>
+<kbd>Esc</kbd> - Quit<br>
+<kbd>SPACE</kbd> - Toggle lights on and off<br>
 
 ## Setup
 
