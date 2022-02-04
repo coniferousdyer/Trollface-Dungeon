@@ -232,6 +232,7 @@ void Game::Init()
 {
     srand(time(NULL));
 
+    this->light = 0;
     this->score = 0;
     this->Level = 0;
 
@@ -298,6 +299,9 @@ void Game::Init()
 
 void Game::Update(float dt)
 {
+    // Updating player position
+    this->playerPos = Player->Position;
+
     // check for collisions
     this->DoCollisions();
 
@@ -362,26 +366,32 @@ void Game::Render()
     if (this->State == GAME_ACTIVE)
     {
         // draw background
-        Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
+        Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f), this->playerPos, this->light);
         // draw level
-        this->Levels[this->Level].Draw(*Renderer);
+        this->Levels[this->Level].Draw(*Renderer, this->playerPos, this->light);
         // draw player
-        Player->Draw(*Renderer);
+        Player->Draw(*Renderer, this->playerPos, this->light);
         // draw enemies
         for (int i = 0; i < ENEMY_LIMIT; i++)
-            Enemies[i]->Draw(*Renderer);
+            Enemies[i]->Draw(*Renderer, this->playerPos, this->light);
 
         int coinsLeft = NUM_COINS - this->score;
         std::stringstream ss, ss2;
         ss << coinsLeft;
-        Text->RenderText("Coins left:" + ss.str(), 5.0f, 5.0f, 1.0f);
+        Text->RenderText("Coins left: " + ss.str(), 5.0f, 5.0f, 1.0f);
         ss2 << time(NULL) - START_TIME;
         Text->RenderText("Seconds since start: " + ss2.str(), 5.0f, 25.0f, 1.0f);
     }
     else if (this->State == GAME_OVER)
-        Renderer->DrawSprite(ResourceManager::GetTexture("game_over"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
+    {
+        this->light = 0;
+        Renderer->DrawSprite(ResourceManager::GetTexture("game_over"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f), this->playerPos, this->light);
+    }
     else if (this->State == GAME_WIN)
-        Renderer->DrawSprite(ResourceManager::GetTexture("game_won"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
+    {
+        this->light = 0;
+        Renderer->DrawSprite(ResourceManager::GetTexture("game_won"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f), this->playerPos, this->light);
+    }
 }
 
 void Game::DoCollisions()
@@ -395,7 +405,12 @@ void Game::DoCollisions()
                 if (!box.IsSolid)
                 {
                     if (box.IsCoin)
-                        this->score++;
+                    {
+                        if (this->light == 1)
+                            this->score += 2;
+                        else
+                            this->score++;
+                    }
 
                     box.Destroyed = true;
                 }

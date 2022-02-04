@@ -28,11 +28,11 @@ void GameLevel::Load(const char *file, unsigned int levelWidth, unsigned int lev
     }
 }
 
-void GameLevel::Draw(SpriteRenderer &renderer)
+void GameLevel::Draw(SpriteRenderer &renderer, glm::vec2 player_pos, int light)
 {
     for (GameObject &tile : this->Bricks)
         if (!tile.Destroyed)
-            tile.Draw(renderer);
+            tile.Draw(renderer,player_pos,light);
 }
 
 bool GameLevel::IsCompleted()

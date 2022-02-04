@@ -86,10 +86,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
         if (Escape.State == GAME_WIN || Escape.State == GAME_OVER)
         {
-            sleep(5);
+            sleep(2);
             glfwSetWindowShouldClose(window, true);
         }
     }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        Escape.light = !Escape.light;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)

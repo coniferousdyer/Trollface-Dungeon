@@ -20,6 +20,8 @@ class Game
 {
 public:
     GameState State;
+    bool light;
+    glm::vec2 playerPos;
     unsigned int score;
     bool Keys[1024];
     unsigned int Width, Height;
