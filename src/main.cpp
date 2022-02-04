@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <unistd.h>
 
 #include "game.h"
 #include "resource_manager.h"
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
 #endif
     glfwWindowHint(GLFW_RESIZABLE, false);
 
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "2D Game", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Trollface Dungeon", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
     // Load glad
@@ -82,6 +83,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             Escape.Keys[key] = true;
         else if (action == GLFW_RELEASE)
             Escape.Keys[key] = false;
+
+        if (Escape.State == GAME_WIN || Escape.State == GAME_OVER)
+        {
+            sleep(5);
+            glfwSetWindowShouldClose(window, true);
+        }
     }
 }
 

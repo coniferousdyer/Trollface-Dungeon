@@ -13,6 +13,7 @@ int COIN_LIMIT = 10;
 int ENEMY_LIMIT = 1;
 int RANDOM_FACTOR = 100;
 int MOVE_FACTOR = 20;
+time_t START_TIME;
 
 // Global game variables
 int NUM_COINS = 0;
@@ -291,6 +292,8 @@ void Game::Init()
         Enemies[i] = new GameObject(enemyPos, enemySize, ResourceManager::GetTexture("enemy"));
         Enemies[i]->IsEnemy = true;
     }
+
+    START_TIME = time(NULL);
 }
 
 void Game::Update(float dt)
@@ -369,9 +372,11 @@ void Game::Render()
             Enemies[i]->Draw(*Renderer);
 
         int coinsLeft = NUM_COINS - this->score;
-        std::stringstream ss;
+        std::stringstream ss, ss2;
         ss << coinsLeft;
         Text->RenderText("Coins left:" + ss.str(), 5.0f, 5.0f, 1.0f);
+        ss2 << time(NULL) - START_TIME;
+        Text->RenderText("Seconds since start: " + ss2.str(), 5.0f, 25.0f, 1.0f);
     }
     else if (this->State == GAME_OVER)
         Renderer->DrawSprite(ResourceManager::GetTexture("game_over"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height));
