@@ -27,6 +27,7 @@ You have an option to toggle the lights on and off. The lights are on by default
 
 2. For convenience, a script has been provided to install the dependencies, compile the game and run it.
 ```bash
+cd Trollface-Dungeon
 ./run.sh
 ```
 The script can be run each time to run the game.
